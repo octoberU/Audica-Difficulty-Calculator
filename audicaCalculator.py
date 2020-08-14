@@ -7,7 +7,7 @@ import os
 import csv
 from math import sqrt
 #variables to be adjusted
-spacing_difficulty = 0.3
+spacing_difficulty = 0.25
 
 csvfile = open('output.csv', 'w', newline='', encoding="utf8")
 fieldnames = ['Map Title', 'Difficulty', 'Difficulty Rating', "BPM", "Author"]
@@ -82,6 +82,7 @@ def calculateAudicaMap(filename):
         midiForTempo = MidiFile("./temp/" + midiname)
         tempos = get_tempos_from_midi(midiForTempo)
 
+        # print("previous last cue: " + str(cues[-1]["tick"]) + " at " + str(tempo))
         mapLength = cues[-1]["tick"] / 480 * tempo / 1000000
         objectCount = 0
         calculatedObjects = 0
@@ -160,6 +161,7 @@ def calculateAudicaMap(filename):
         def get_delta_time(cue):
         #tempos = self.tempos
             if len(tempos) > 1:
+                # print(str(cue["tick"]))
                 tick = cue["tick"]
                 time = 0
                 last_tempo = 0
@@ -184,21 +186,24 @@ def calculateAudicaMap(filename):
                     time = time + (tick_time * difference)
                 return time
             else:
-                return cue["tick"] / 480 * tempos[0]["tempo"]
+                # print("ELSE get_delta_time tempos: " + str(mido.bpm2tempo(tempos[0]["tempo"])))
+                # print("cue tick: " + str(cue["tick"]))
+                return cue["tick"] / 480 * mido.bpm2tempo(tempos[0]["tempo"]) /1000
+                #/ 1000000
 
         #get first and last cues
 
-        firstCueTime = get_delta_time(finalCuesSorted[0])
-        lastCueTime = get_delta_time(finalCuesSorted[-1])
+        firstCueTime = round(get_delta_time(finalCuesSorted[0]), 2)
+        lastCueTime = round(get_delta_time(finalCuesSorted[-1]), 2)
 
-        print("1st: " + str(firstCueTime))
-        print("Last: " + str(lastCueTime))
+        # print("1st: " + str(firstCueTime))
+        # print("Last: " + str(lastCueTime))
 
-        print("prev mapLength: " + str(mapLength))
+        # print("prev mapLength: " + str(mapLength))
 
         mapLength = (lastCueTime - firstCueTime) / 1000
 
-        print("cur mapLength: " + str(mapLength))
+        # print("cur mapLength: " + str(round(mapLength, 2)))
 
         NPS = round((objectCount / mapLength), 2)
         StarRating = str( round((calculatedObjects / mapLength), 2))
