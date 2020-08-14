@@ -52,10 +52,10 @@ public class CalculatedDifficulty
         { Target.TargetBehavior.Melee, 0.6f }
     };
 
-    List<SongCues.Cue> leftHandCues;
-    List<SongCues.Cue> rightHandCues;
-    List<SongCues.Cue> eitherHandCues;
-    List<SongCues.Cue> allCues;
+    List<SongCues.Cue> leftHandCues = new List<SongCues.Cue>();
+    List<SongCues.Cue> rightHandCues = new List<SongCues.Cue>();
+    List<SongCues.Cue> eitherHandCues = new List<SongCues.Cue>();
+    List<SongCues.Cue> allCues = new List<SongCues.Cue>();
 
     public void EvaluateCues(SongCues.Cue[] cues, SongList.SongData songData)
     {
@@ -64,6 +64,7 @@ public class CalculatedDifficulty
         CalculateSpacing();
         CalculateDensity();
         CalculateReadability();
+        difficultyRating = spacing + readability;
     }
 
     void CalculateReadability()
@@ -131,4 +132,3 @@ public class CalculatedDifficulty
         }
     }
 }
-
