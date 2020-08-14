@@ -8,6 +8,7 @@ import csv
 from math import sqrt
 #variables to be adjusted
 spacing_difficulty = 0.25
+spacing_cap = 1.8
 
 csvfile = open('output.csv', 'w', newline='', encoding="utf8")
 fieldnames = ['Map Title', 'Difficulty', 'Difficulty Rating', "BPM", "Author"]
@@ -44,11 +45,14 @@ def calculateAudicaMap(filename):
 
     #get BPM
     mid = MidiFile("./temp/" + midiname)
+    tempo = -1
     for i, track in enumerate(mid.tracks):
         for msg in track:
             if msg.type == 'set_tempo':
                 tempo = msg.tempo
-
+    #empty tempo handling
+    if tempo == -1:
+        tempo = mapdesc["tempo"]
     #get tempos
     def get_tempos_from_midi(midi_file):
         pattern = midi.read_midifile("./temp/" + midiname)
@@ -62,6 +66,12 @@ def calculateAudicaMap(filename):
                     temposList.append({
                         "tick": tick,
                         "tempo": event.get_bpm()
+                        })
+                #empty tempo handling
+                if not temposList:
+                    temposList.append({
+                        "tick": 0,
+                        "tempo": tempo
                         })
         # for i, track in enumerate(pattern.tracks):
         #     for msg in track:
@@ -83,9 +93,10 @@ def calculateAudicaMap(filename):
         tempos = get_tempos_from_midi(midiForTempo)
 
         # print("previous last cue: " + str(cues[-1]["tick"]) + " at " + str(tempo))
-        mapLength = cues[-1]["tick"] / 480 * tempo / 1000000
+        # mapLength = cues[-1]["tick"] / 480 * tempo / 1000000
         objectCount = 0
         calculatedObjects = 0
+        
         
         leftHand = []
         rightHand = []
@@ -105,16 +116,21 @@ def calculateAudicaMap(filename):
 
         def getObjectDifficulty(object):
             difficulty = 0
+            cueSpacing = object.get("spacing", 0) * spacing_difficulty
+            # cap spacing difficulty weight
+            if ( cueSpacing > spacing_cap):
+                print("beeg spacing alert beeg spacing alert: " + str(cueSpacing))
+                cueSpacing = spacing_cap
             if object["behavior"] == 0: #normal circle
-                difficulty = 1 + object.get("spacing", 0) * spacing_difficulty
+                difficulty = 1 + cueSpacing
             elif object["behavior"] == 1: #vertical object
-                difficulty = 1.2 + object.get("spacing", 0) * spacing_difficulty
+                difficulty = 1.2 + cueSpacing
             elif object["behavior"] == 2: #horizontal object
-                difficulty = 1.5 + object.get("spacing", 0) * spacing_difficulty
+                difficulty = 1.3 + cueSpacing
             elif object["behavior"] == 3: #sustain
-                difficulty = 1 + object.get("spacing", 0) * spacing_difficulty
+                difficulty = 1 + cueSpacing
             elif object["behavior"] == 4: #chain start
-                difficulty = 1.2 + object.get("spacing", 0) * spacing_difficulty
+                difficulty = 1.2 + cueSpacing
             elif object["behavior"] == 5: #chain node
                 difficulty = 0.2 
             elif object["behavior"] == 6: #melee
