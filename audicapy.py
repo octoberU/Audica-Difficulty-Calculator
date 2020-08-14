@@ -89,15 +89,15 @@ class audica_target():
         self.tickLength = cue["tickLength"]
         self.pitch = cue["pitch"]
         self.velocity = cue["velocity"]
-        self.handType = audica_target.get_handtype(cue["handType"])
-        self.behavior = audica_target.get_behavior(cue["behavior"])
+        self.handType = self.get_handtype(cue["handType"])
+        self.behavior = self.get_behavior(cue["behavior"])
         self.zOffset = cue.get("zOffset", 0)
         self.gridOffset = (cue["gridOffset"]["x"], cue["gridOffset"]["y"])
         self.tempos = tempos
 
 
 
-    def get_behavior(enum):
+    def get_behavior(self, enum):
         audica_behaviors = {
             0: "target",
             1: "vertical",
@@ -109,7 +109,7 @@ class audica_target():
         }
         return audica_behaviors.get(enum, "invalid behavior")
 
-    def get_handtype(enum):
+    def get_handtype(self, enum):
         audica_handtypes = {
             0: "either",
             1: "right",
@@ -117,7 +117,7 @@ class audica_target():
         }
         return audica_handtypes.get(enum, "invalid handtype")
 
-    def behavior_to_cue(behavior):
+    def behavior_to_cue(self, behavior):
         audica_behaviors = {
             "target": 0,
             "vertical": 1,
@@ -129,7 +129,7 @@ class audica_target():
         }
         return audica_behaviors.get(behavior, "invalid behavior")
 
-    def handtype_to_cue(enum):
+    def handtype_to_cue(self, enum):
         audica_handtypes = {
             "either": 0,
             "right": 1,
@@ -186,8 +186,8 @@ class audica_target():
             "y": self.gridOffset[1]
         },
         "zOffset": self.zOffset,
-        "handtype": audica_target.behavior_to_cue(self.behavior),
-        "behavior": audica_target.handtype_to_cue(self.handType)
+        "handtype": self.behavior_to_cue(self.behavior),
+        "behavior": self.handtype_to_cue(self.handType)
         }
         return cue
     
