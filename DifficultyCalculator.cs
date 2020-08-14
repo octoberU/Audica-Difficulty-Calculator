@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using MelonLoader;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DifficultyCalculator
@@ -18,21 +19,22 @@ public class DifficultyCalculator
 
     private void EvaluateDifficulties(SongList.SongData songData)
     {
-        if (songData.hasExpert)
-            this.expert.EvaluateCues(SongCues.GetCues(songData, KataConfig.Difficulty.Expert), songData);
-        if (songData.hasHard)
-            this.expert.EvaluateCues(SongCues.GetCues(songData, KataConfig.Difficulty.Hard), songData);
-        if (songData.hasNormal)
-            this.expert.EvaluateCues(SongCues.GetCues(songData, KataConfig.Difficulty.Normal), songData);
-        if (songData.hasEasy)
-            this.expert.EvaluateCues(SongCues.GetCues(songData, KataConfig.Difficulty.Easy), songData);
+        var expertCues = SongCues.GetCues(songData, KataConfig.Difficulty.Expert);
+        if (expertCues.Length > 0 && expertCues != null) this.expert = new CalculatedDifficulty(expertCues, songData);
+        var advancedCues = SongCues.GetCues(songData, KataConfig.Difficulty.Hard);
+        if (advancedCues.Length > 0 && advancedCues != null) this.advanced = new CalculatedDifficulty(advancedCues, songData);
+        var standardCues = SongCues.GetCues(songData, KataConfig.Difficulty.Normal);
+        if (standardCues.Length > 0 && standardCues != null) this.standard = new CalculatedDifficulty(standardCues, songData);
+        var beginnerCues = SongCues.GetCues(songData, KataConfig.Difficulty.Easy);
+        if (beginnerCues.Length > 0 && beginnerCues != null) this.beginner = new CalculatedDifficulty(beginnerCues, songData);
     }
 }
 public class CalculatedDifficulty
 {
-    public static float spacingMultiplier = 0.25f;
-    public static float lengthMultiplier = 1f;
+    public static float spacingMultiplier = 1f;
+    public static float lengthMultiplier = 0.7f;
     public static float densityMultiplier = 1f;
+    public static float readabilityMultiplier = 1.2f;
 
     public float difficultyRating;
     public float spacing;
@@ -40,6 +42,11 @@ public class CalculatedDifficulty
     public float readability;
 
     float length;
+
+    public CalculatedDifficulty(SongCues.Cue[] cues, SongList.SongData songData)
+    {
+        EvaluateCues(cues, songData);
+    }
 
     public static Dictionary<Target.TargetBehavior, float> objectDifficultyModifier = new Dictionary<Target.TargetBehavior, float>()
     {
@@ -64,7 +71,7 @@ public class CalculatedDifficulty
         CalculateSpacing();
         CalculateDensity();
         CalculateReadability();
-        difficultyRating = spacing + readability;
+        difficultyRating = ((spacing + readability) / length ) * 500f + (length / 100000f * lengthMultiplier);
     }
 
     void CalculateReadability()
@@ -73,16 +80,16 @@ public class CalculatedDifficulty
         {
             float modifierValue = 0f;
             objectDifficultyModifier.TryGetValue(allCues[i].behavior, out modifierValue);
-            readability += modifierValue;
+            readability += modifierValue * readabilityMultiplier;
         }
-        readability /= length;
+        //readability /= length;
     }
 
     void CalculateSpacing()
     {
         GetSpacingPerHand(leftHandCues);
         GetSpacingPerHand(rightHandCues);
-        spacing /= length;
+        //spacing /= length;
     }
 
     void CalculateDensity()
